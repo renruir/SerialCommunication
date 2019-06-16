@@ -32,7 +32,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
-
             android:text="端口:" />
 
         <EditText
@@ -45,6 +44,31 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:gravity="right"
+            android:text="波特率:" />
+
+        <Spinner
+            android:id="@+id/baud_rate_spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="100dp"
+            android:layout_weight="2"
+            android:entries="@array/baud_rate_spinner_values" />
+    </LinearLayout>
+
 
     <Button
         android:id="@+id/setup_ss"
@@ -53,54 +77,49 @@
         android:layout_margin="10dp"
         android:text="启动服务" />
 
-    <LinearLayout
+
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:text="已连接设备IP和端口号:" />
 
-        <TextView
-            android:text="已连接设备IP和端口号:"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+    <TextView
+        android:id="@+id/connected_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:gravity="center"
+        android:text="未发现连接设备"
+        android:textColor="#000"
+        android:textSize="20dp" />
 
-        <TextView
-            android:id="@+id/connected_devices"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_margin="10dp"
-            android:textSize="20dp"
-            android:textColor="#000"
-            android:text="未发现连接设备" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:text="收到的指令:" />
 
-        <TextView
-            android:text="收到的指令:"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+    <TextView
+        android:id="@+id/rec_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:gravity="center"
+        android:text="未收到指令"
+        android:textColor="#000"
+        android:textSize="20dp" />
 
-        <TextView
-            android:id="@+id/rec_info"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:layout_margin="10dp"
-            android:textSize="20dp"
-            android:textColor="#000"
-            android:text="未收到指令" />
-
-    </LinearLayout>
 
     <Button
         android:id="@+id/stop_ss"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:text="停止服务"
-        android:layout_marginVertical="1dp" />
+        android:layout_marginVertical="1dp"
+        android:text="停止服务" />
 
 
 </LinearLayout>
