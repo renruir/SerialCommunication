@@ -11,8 +11,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +35,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView myIpdress;
     private TextView mConnectInfo;
     private TextView mRecInfo;
+    private Spinner mSpinner;
+    private String[] baudRates;
+    private int baudRate;
 
     private SerialPortUtil serialPortUtil;
 
@@ -68,8 +73,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         myIpdress = (TextView) findViewById(R.id.ip_address);
         mConnectInfo = (TextView) findViewById(R.id.connected_devices);
         mRecInfo = (TextView) findViewById(R.id.rec_info);
+        mSpinner = (Spinner)findViewById(R.id.baud_rate_spinner);
 
         myIpdress.setText(getIPAddress(this) + "");
+        baudRates = getResources().getStringArray(R.array.baud_rate_spinner_values);
+
+        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d(TAG, "onItemSelected: "+baudRates[i]);
+                baudRate = Integer.parseInt(baudRates[i]);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
 
     @Override
@@ -219,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void sendData2Serial(String data) {
         serialPortUtil = new SerialPortUtil();
-        serialPortUtil.openSerialPort();
+        serialPortUtil.openSerialPort(baudRate);
         EventBus.getDefault().register(this);
         serialPortUtil.sendSerialPort(data);
     }
