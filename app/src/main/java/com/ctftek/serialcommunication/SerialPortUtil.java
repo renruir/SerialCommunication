@@ -28,9 +28,16 @@ public class SerialPortUtil {
      * 打开串口，接收数据
      * 通过串口，接收单片机发送来的数据
      */
-    public void openSerialPort(int baudRate) {
+    public void openSerialPort(String device, int baudRate) {
+        if(device.isEmpty()){
+            try {
+                throw new Exception("设备为空");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         try {
-            serialPort = new SerialPort(new File("/dev/ttyS0"), baudRate, 0);
+            serialPort = new SerialPort(new File(device), baudRate, 0);
             //调用对象SerialPort方法，获取串口中"读和写"的数据流
             inputStream = serialPort.getInputStream();
             outputStream = serialPort.getOutputStream();

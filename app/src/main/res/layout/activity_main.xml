@@ -52,11 +52,21 @@
         android:orientation="horizontal">
 
         <TextView
+            android:text="设备："
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <Spinner
+            android:id="@+id/dev_devices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="100dp" />
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:layout_weight="1"
             android:gravity="right"
             android:text="波特率:" />
 
@@ -65,7 +75,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="100dp"
-            android:layout_weight="2"
             android:entries="@array/baud_rate_spinner_values" />
     </LinearLayout>
 

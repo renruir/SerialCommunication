@@ -33,20 +33,29 @@ public class SerialPort {
 
 		/* Check access permission */
         if (!device.canRead() || !device.canWrite()) {
+            Process process = null;
             try {
                 /* Missing read/write permission, trying to chmod the file */
-                Process su;
-                su = Runtime.getRuntime().exec("/system/bin/su");
+//                Process su;
+//                su = Runtime.getRuntime().exec("/system/bin/su");
                 String cmd = "chmod 666 " + device.getAbsolutePath() + "\n"
                         + "exit\n";
-                su.getOutputStream().write(cmd.getBytes());
-                if ((su.waitFor() != 0) || !device.canRead()
-                        || !device.canWrite()) {
-                    throw new SecurityException();
-                }
+                process = Runtime.getRuntime().exec(cmd);
+                process.waitFor();
+//                su.getOutputStream().write(cmd.getBytes());
+//                if ((su.waitFor() != 0) || !device.canRead()
+//                        || !device.canWrite()) {
+//                    throw new SecurityException();
+//                }
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new SecurityException();
+            } finally {
+                try {
+                    process.destroy();
+                } catch (Exception e) {
+                    Log.w("Exception ", "Unexpected error - "+e.getMessage());
+                }
             }
         }
 

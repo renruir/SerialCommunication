@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -19,6 +20,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -26,20 +29,28 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
+import android_serialport_api.SerialPortFinder;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, UpdateInfo {
     private final static String TAG = MainActivity.class.getName();
 
+    private Application mApplication;
     private Button setupServiceBtn;
     private Button stopServiceBtn;
     private EditText mPort;
     private TextView myIpdress;
     private TextView mConnectInfo;
     private TextView mRecInfo;
-    private Spinner mSpinner;
+    private Spinner mBaudrateSpinner;
     private String[] baudRates;
     private int baudRate;
+    private Spinner mDevDevicesSpinner;
+    private String[] devDevices;
+    private String[] devDevicesPath;
+    private String devDevice;
 
     private SerialPortUtil serialPortUtil;
+    private SerialPortFinder mSerialPortFinder;
 
 
     private Handler mHandler = new Handler() {
@@ -64,6 +75,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mApplication = (Application) getApplication();
+        mSerialPortFinder = mApplication.mSerialPortFinder;
+
         setContentView(R.layout.activity_main);
         setupServiceBtn = (Button) findViewById(R.id.setup_ss);
         stopServiceBtn = (Button) findViewById(R.id.stop_ss);
@@ -73,15 +88,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         myIpdress = (TextView) findViewById(R.id.ip_address);
         mConnectInfo = (TextView) findViewById(R.id.connected_devices);
         mRecInfo = (TextView) findViewById(R.id.rec_info);
-        mSpinner = (Spinner)findViewById(R.id.baud_rate_spinner);
+        mBaudrateSpinner = (Spinner) findViewById(R.id.baud_rate_spinner);
+        mDevDevicesSpinner = (Spinner)findViewById(R.id.dev_devices);
 
         myIpdress.setText(getIPAddress(this) + "");
         baudRates = getResources().getStringArray(R.array.baud_rate_spinner_values);
+        mBaudrateSpinner.setSelection(1,true);
 
-        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        devDevices = mSerialPortFinder.getAllDevices();
+        devDevicesPath = mSerialPortFinder.getAllDevicesPath();
+
+        ArrayAdapter devicesArrayAdapter = new ArrayAdapter<CharSequence>(this,android.R.layout.simple_spinner_item, devDevices);
+        mDevDevicesSpinner.setAdapter(devicesArrayAdapter);
+        mDevDevicesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                Log.d(TAG, "onItemSelected: "+baudRates[i]);
+                devDevice = devDevicesPath[i];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        mBaudrateSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                Log.d(TAG, "onItemSelected: " + baudRates[i]);
                 baudRate = Integer.parseInt(baudRates[i]);
             }
 
@@ -237,10 +271,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void sendData2Serial(String data) {
         serialPortUtil = new SerialPortUtil();
-        serialPortUtil.openSerialPort(baudRate);
+        serialPortUtil.openSerialPort(devDevice, baudRate);
         EventBus.getDefault().register(this);
+//        EventBus.getDefault().unregister(this);
         serialPortUtil.sendSerialPort(data);
     }
+
+
 }
