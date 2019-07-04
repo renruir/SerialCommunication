@@ -113,7 +113,6 @@ public class SerialPortUtil {
                         String readString = DataUtils.ByteArrToHex(readData, 0, size);
                         EventBus.getDefault().post(readString);
                     }
-
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

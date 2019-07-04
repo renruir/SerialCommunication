@@ -1,6 +1,7 @@
 package com.ctftek.serialcommunication;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
@@ -49,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String[] devDevicesPath;
     private String devDevice;
 
+    private SharedPreferences sp;
+
     private SerialPortUtil serialPortUtil;
     private SerialPortFinder mSerialPortFinder;
 
@@ -76,8 +79,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        sp = getSharedPreferences("app_info", Context.MODE_PRIVATE);
+        String historyPort = sp.getString("port", "65535");
+
         mApplication = (Application) getApplication();
         mSerialPortFinder = mApplication.mSerialPortFinder;
+        EventBus.getDefault().register(this);
 
         setContentView(R.layout.activity_main);
         setupServiceBtn = (Button) findViewById(R.id.setup_ss);
@@ -85,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setupServiceBtn.setOnClickListener(this);
         stopServiceBtn.setOnClickListener(this);
         mPort = (EditText) findViewById(R.id.port);
+        mPort.setText(historyPort);
         myIpdress = (TextView) findViewById(R.id.ip_address);
         mConnectInfo = (TextView) findViewById(R.id.connected_devices);
         mRecInfo = (TextView) findViewById(R.id.rec_info);
@@ -141,6 +149,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 try {
                     ClientManager.startServer(port, this);
+                    SharedPreferences.Editor editor = sp.edit();
+                    editor.putString("port", mPort.getText().toString());
+                    editor.commit();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -275,10 +286,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void sendData2Serial(String data) {
         serialPortUtil = new SerialPortUtil();
         serialPortUtil.openSerialPort(devDevice, baudRate);
-        EventBus.getDefault().register(this);
-//        EventBus.getDefault().unregister(this);
         serialPortUtil.sendSerialPort(data);
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ClientManager.shutDown();
+    }
 }

@@ -53,28 +53,34 @@
 
         <TextView
             android:text="设备："
+            android:layout_gravity="center"
+            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <Spinner
             android:id="@+id/dev_devices"
+            android:layout_gravity="center"
+            android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="100dp" />
+            android:layout_marginRight="50dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:gravity="right"
+            android:layout_gravity="center"
+            android:gravity="center"
             android:text="波特率:" />
 
         <Spinner
             android:id="@+id/baud_rate_spinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="100dp"
+            android:layout_gravity="center"
+            android:gravity="center"
             android:entries="@array/baud_rate_spinner_values" />
     </LinearLayout>
 
