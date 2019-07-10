@@ -110,8 +110,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ArrayAdapter devicesArrayAdapter = new ArrayAdapter<CharSequence>(this,android.R.layout.simple_spinner_item, devDevices);
         mDevDevicesSpinner.setAdapter(devicesArrayAdapter);
-        mDevDevicesSpinner.setSelection(DEFAULT_DEV_SERIAL, true);
-        devDevice = devDevicesPath[DEFAULT_DEV_SERIAL];
+        if(devDevicesPath.length == 0){
+
+        } else {
+            mDevDevicesSpinner.setSelection(DEFAULT_DEV_SERIAL, true);
+            devDevice = devDevicesPath[DEFAULT_DEV_SERIAL];
+        }
+
         mDevDevicesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -146,7 +151,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.setup_ss:
-                startService();
+//                startService();
+                startUDPReceiver();
                 break;
             case R.id.stop_ss:
                 ClientManager.shutDown();
@@ -156,6 +162,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 setupServiceBtn.setEnabled(true);
                 break;
         }
+    }
+
+    private void startUDPReceiver(){
+        UdpReceiveClient udpReceiveClient = new UdpReceiveClient();
+        udpReceiveClient.startUDPReceiver();
     }
 
     private void startService(){
