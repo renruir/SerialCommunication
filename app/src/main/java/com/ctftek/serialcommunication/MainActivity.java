@@ -35,6 +35,8 @@ import android_serialport_api.SerialPortFinder;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, UpdateInfo {
     private final static String TAG = MainActivity.class.getName();
 
+    private final static int DEFAULT_DEV_SERIAL = 6;
+
     private Application mApplication;
     private Button setupServiceBtn;
     private Button stopServiceBtn;
@@ -80,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
 
         sp = getSharedPreferences("app_info", Context.MODE_PRIVATE);
-        String historyPort = sp.getString("port", "65535");
+        String historyPort = sp.getString("port", "0");
 
         mApplication = (Application) getApplication();
         mSerialPortFinder = mApplication.mSerialPortFinder;
@@ -108,6 +110,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ArrayAdapter devicesArrayAdapter = new ArrayAdapter<CharSequence>(this,android.R.layout.simple_spinner_item, devDevices);
         mDevDevicesSpinner.setAdapter(devicesArrayAdapter);
+        mDevDevicesSpinner.setSelection(DEFAULT_DEV_SERIAL, true);
+        devDevice = devDevicesPath[DEFAULT_DEV_SERIAL];
         mDevDevicesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -132,33 +136,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             }
         });
+
+        if(!historyPort.isEmpty() && !historyPort.equals("0")){
+            startService();
+        }
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.setup_ss:
-                if (mPort.getText().toString().isEmpty()) {
-                    Toast.makeText(this, "请输入端口号", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                int port = Integer.parseInt(mPort.getText().toString());
-                if (!(port > 1024 && port < 65535)) {
-                    Toast.makeText(this, "端口号应大于1024，小于65535", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                try {
-                    ClientManager.startServer(port, this);
-                    SharedPreferences.Editor editor = sp.edit();
-                    editor.putString("port", mPort.getText().toString());
-                    editor.commit();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                startService();
                 break;
             case R.id.stop_ss:
                 ClientManager.shutDown();
+                mPort.setFocusableInTouchMode(true);//服务停止，端口号可编辑
+                mPort.setFocusable(true);
+                mPort.requestFocus();
+                setupServiceBtn.setEnabled(true);
                 break;
+        }
+    }
+
+    private void startService(){
+        if (mPort.getText().toString().isEmpty()) {
+            Toast.makeText(this, "请输入端口号", Toast.LENGTH_LONG).show();
+            return;
+        }
+        int port = Integer.parseInt(mPort.getText().toString());
+        if (!(port > 1024 && port < 65535)) {
+            Toast.makeText(this, "端口号应大于1024，小于65535", Toast.LENGTH_LONG).show();
+            return;
+        }
+        try {
+            ClientManager.startServer(port, this);
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putString("port", mPort.getText().toString());
+            editor.commit();
+            mPort.setFocusable(false);//服务已启动，设置不可编辑端口号
+            mPort.setFocusableInTouchMode(false);
+            setupServiceBtn.setEnabled(false);//服务已启动，该按钮不可用
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

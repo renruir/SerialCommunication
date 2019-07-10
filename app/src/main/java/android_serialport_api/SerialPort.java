@@ -61,14 +61,18 @@ public class SerialPort {
 
         System.out.println(device.getAbsolutePath()
                 + "==============================");
-
-        mFd = open(device.getAbsolutePath(), baudrate, flags);
-        if (mFd == null) {
-            Log.e(TAG, "native open returns null");
-            throw new IOException();
+        try{
+            mFd = open(device.getAbsolutePath(), baudrate, flags);
+            if (mFd == null) {
+                Log.e(TAG, "native open returns null");
+                throw new IOException();
+            }
+            mFileInputStream = new FileInputStream(mFd);
+            mFileOutputStream = new FileOutputStream(mFd);
+        } catch (Exception e){
+            Log.e(TAG, "无法向该端口写入数据，请尝试其他端口");
+            e.printStackTrace();
         }
-        mFileInputStream = new FileInputStream(mFd);
-        mFileOutputStream = new FileOutputStream(mFd);
     }
 
     // Getters and setters

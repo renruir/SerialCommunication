@@ -152,6 +152,14 @@ public class ClientManager {
         return serverThread;
     }
 
+    public static boolean isStart(){
+        if(clientList.isEmpty()){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 
     // 发送消息的方法
     public static boolean sendMessage(String name, String mag) {
