@@ -1,12 +1,16 @@
 package com.ctftek.serialcommunication;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -32,7 +36,7 @@ import java.util.Enumeration;
 
 import android_serialport_api.SerialPortFinder;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, UpdateInfo {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, UpdateInfo, UDPReceiveService.DataCallBack {
     private final static String TAG = MainActivity.class.getName();
 
     private final static int DEFAULT_DEV_SERIAL = 6;
@@ -57,7 +61,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SerialPortUtil serialPortUtil;
     private SerialPortFinder mSerialPortFinder;
 
-
+    private UDPReceiveService udpReceiveService;
+    private boolean mBind = false;
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -142,20 +147,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-        if(!historyPort.isEmpty() && !historyPort.equals("0")){
-            startService();
-        }
+//        if(!historyPort.isEmpty() && !historyPort.equals("0")){
+////            startUDPRecService();
+////        }
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.setup_ss:
-//                startService();
-                startUDPReceiver();
+                startUDPRecService();
                 break;
             case R.id.stop_ss:
-                ClientManager.shutDown();
+                unbindService(mConnection);
                 mPort.setFocusableInTouchMode(true);//服务停止，端口号可编辑
                 mPort.setFocusable(true);
                 mPort.requestFocus();
@@ -164,29 +168,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void startUDPReceiver(){
-        UdpReceiveClient udpReceiveClient = new UdpReceiveClient();
-        udpReceiveClient.startUDPReceiver();
-    }
 
-    private void startService(){
-        if (mPort.getText().toString().isEmpty()) {
-            Toast.makeText(this, "请输入端口号", Toast.LENGTH_LONG).show();
-            return;
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d(TAG, "onServiceConnected: ");
+            UDPReceiveService.MyBinder binder = (UDPReceiveService.MyBinder) service;
+            udpReceiveService = binder.getService();
+            mBind = true;
+            udpReceiveService.setCallBack(MainActivity.this);
         }
-        int port = Integer.parseInt(mPort.getText().toString());
-        if (!(port > 1024 && port < 65535)) {
-            Toast.makeText(this, "端口号应大于1024，小于65535", Toast.LENGTH_LONG).show();
-            return;
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mBind = false;
         }
+    };
+
+    private void startUDPRecService(){
         try {
-            ClientManager.startServer(port, this);
+            if (mPort.getText().toString().isEmpty()) {
+                Toast.makeText(this, "请输入端口号", Toast.LENGTH_LONG).show();
+                return;
+            }
+            int port = Integer.parseInt(mPort.getText().toString());
+            if (!(port > 1024 && port < 65535)) {
+                Toast.makeText(this, "端口号应大于1024，小于65535", Toast.LENGTH_LONG).show();
+                return;
+            }
+
             SharedPreferences.Editor editor = sp.edit();
             editor.putString("port", mPort.getText().toString());
             editor.commit();
             mPort.setFocusable(false);//服务已启动，设置不可编辑端口号
             mPort.setFocusableInTouchMode(false);
             setupServiceBtn.setEnabled(false);//服务已启动，该按钮不可用
+
+            Intent intent = new Intent(this, UDPReceiveService.class);
+            intent.putExtra("port", port);
+            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -214,7 +236,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     e.printStackTrace();
                 }
 
-
             } else if (info.getSubtype() == ConnectivityManager.TYPE_WIFI) {//当前使用无线网络
                 WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                 WifiInfo wifiInfo = wifiManager.getConnectionInfo();
@@ -233,14 +254,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 ((ip >> 8) & 0xFF) + "." +
                 ((ip >> 16) & 0xFF) + "." +
                 (ip >> 24 & 0xFF);
-    }
-
-
-    public void doSomething(String ret) {
-        Message msg = Message.obtain();
-        msg.obj = (Object) ret;
-        mHandler.sendMessage(msg);
-
     }
 
     public static String bytesToHexString(byte[] src) {
@@ -322,6 +335,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ClientManager.shutDown();
+//        ClientManager.shutDown();
+        unbindService(mConnection);
+
     }
 }

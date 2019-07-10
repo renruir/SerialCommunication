@@ -16,6 +16,7 @@ import java.util.Vector;
  */
 
 public class SerialPortFinder {
+    private static final String TAG = "SerialPortFinder";
 
     public class Driver {
         public Driver(String name, String root) {
@@ -32,8 +33,12 @@ public class SerialPortFinder {
                 mDevices = new Vector<File>();
                 File dev = new File("/dev");
                 File[] files = dev.listFiles();
-                int i;
-                for (i = 0; i < files.length; i++) {
+                Log.d(TAG, "files: "+files);
+                if(files == null){
+                    files = new  File[1];
+                    files[0] = new File("/dev/sst");
+                }
+                for (int i = 0; i < files.length; i++) {
                     if (files[i].getAbsolutePath().startsWith(mDeviceRoot)) {
                         Log.d(TAG, "Found new device: " + files[i]);
                         mDevices.add(files[i]);
@@ -47,8 +52,6 @@ public class SerialPortFinder {
             return mDriverName;
         }
     }
-
-    private static final String TAG = "SerialPortFinder";
 
     private Vector<Driver> mDrivers = null;
 
