@@ -76,8 +76,9 @@ public class SerialPortUtil {
      * @param data 要发送的数据
      */
     public void sendSerialPort(String data) {
+        System.out.println("send Serial data is:"+data);
         try {
-            byte[] sendData = DataUtils.HexToByteArr(data);
+            byte[] sendData = DataUtils.hexToByteArr(data);
             outputStream.write(sendData);
             outputStream.flush();
         } catch (IOException e) {
@@ -110,7 +111,7 @@ public class SerialPortUtil {
                 try {
                     int size = inputStream.read(readData);
                     if (size > 0) {
-                        String readString = DataUtils.ByteArrToHex(readData, 0, size);
+                        String readString = DataUtils.byteArrToHex(readData, 0, size);
                         EventBus.getDefault().post(readString);
                     }
                 } catch (IOException e) {

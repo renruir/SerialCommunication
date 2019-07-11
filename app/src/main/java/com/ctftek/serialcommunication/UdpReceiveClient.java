@@ -13,11 +13,12 @@ public class UdpReceiveClient {
     private DatagramSocket dp;
     private String recCommand;
     private int mPort;
-    private UDPReceiveService.DataCallBack mDataCallBack;
+    private UpdateInfo mDataCallBack;
 
-    public UdpReceiveClient(int port, UDPReceiveService.DataCallBack dataCallBack) {
+    public UdpReceiveClient(int port, UpdateInfo dataCallBack) {
         mPort = port;
         mDataCallBack = dataCallBack;
+        Log.d(TAG, "mDataCallBack: " + mDataCallBack);
     }
 
     public void startUDPReceiver() {
@@ -26,7 +27,15 @@ public class UdpReceiveClient {
         }
         udpReceiverThread = new UDPReceiverThread();
         udpReceiverThread.start();
+        mDataCallBack.updateServerInfo(true);
         Log.d(TAG, "startUDPReceiver success");
+    }
+
+    public void stopUDPReceiver(){
+        if(udpReceiverThread.isAlive()){
+            udpReceiverThread.interrupt();
+            mDataCallBack.updateState();
+        }
     }
 
     private class UDPReceiverThread extends Thread {
@@ -43,45 +52,16 @@ public class UdpReceiveClient {
                     byte[] buffer = new byte[6];
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                     dp.receive(packet);
-                    recCommand = bytesHexString(buffer);
+                    recCommand = DataUtils.bytesHexString(buffer);
                     Log.i(TAG, "收到命令: " + recCommand);
-                    Log.d(TAG, "mDataCallBack: "+mDataCallBack);
+                    Log.d(TAG, "mDataCallBack: " + mDataCallBack);
                     mDataCallBack.updateCommandInfo(buffer);
-//                    mDataCallBack.sendData2Serial(recCommand);
+                    mDataCallBack.sendData2Serial(recCommand);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
     }
-
-    public static String bytesToHexString(byte[] src) {
-        StringBuilder stringBuilder = new StringBuilder("");
-        if (src == null || src.length <= 0) {
-            return null;
-        }
-        for (int i = 0; i < src.length; i++) {
-            int v = src[i] & 0xFF;
-            String hv = Integer.toHexString(v);
-            if (hv.length() < 2) {
-                stringBuilder.append(0);
-            }
-            stringBuilder.append(hv);
-        }
-        return stringBuilder.toString();
-    }
-
-    public static String bytesHexString(byte[] b) {
-        String ret = "";
-        for (int i = 0; i < b.length; i++) {
-            String hex = Integer.toHexString(b[i] & 0xFF);
-            if (hex.length() == 1) {
-                hex = '0' + hex;
-            }
-            ret += hex.toUpperCase();
-        }
-        return ret;
-    }
-
 
 }

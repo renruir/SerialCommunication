@@ -36,7 +36,7 @@ import java.util.Enumeration;
 
 import android_serialport_api.SerialPortFinder;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, UpdateInfo, UDPReceiveService.DataCallBack {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, UpdateInfo {
     private final static String TAG = MainActivity.class.getName();
 
     private final static int DEFAULT_DEV_SERIAL = 6;
@@ -104,20 +104,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mConnectInfo = (TextView) findViewById(R.id.connected_devices);
         mRecInfo = (TextView) findViewById(R.id.rec_info);
         mBaudrateSpinner = (Spinner) findViewById(R.id.baud_rate_spinner);
-        mDevDevicesSpinner = (Spinner)findViewById(R.id.dev_devices);
+        mDevDevicesSpinner = (Spinner) findViewById(R.id.dev_devices);
 
         myIpdress.setText(getIPAddress(this) + "");
         baudRates = getResources().getStringArray(R.array.baud_rate_spinner_values);
-        mBaudrateSpinner.setSelection(1,true);
+        mBaudrateSpinner.setSelection(1, true);
 
         devDevices = mSerialPortFinder.getAllDevices();
         devDevicesPath = mSerialPortFinder.getAllDevicesPath();
 
-        ArrayAdapter devicesArrayAdapter = new ArrayAdapter<CharSequence>(this,android.R.layout.simple_spinner_item, devDevices);
+        ArrayAdapter devicesArrayAdapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_item, devDevices);
         mDevDevicesSpinner.setAdapter(devicesArrayAdapter);
-        if(devDevicesPath.length == 0){
-
-        } else {
+        if (devDevicesPath.length != 0) {
             mDevDevicesSpinner.setSelection(DEFAULT_DEV_SERIAL, true);
             devDevice = devDevicesPath[DEFAULT_DEV_SERIAL];
         }
@@ -147,9 +145,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-//        if(!historyPort.isEmpty() && !historyPort.equals("0")){
-////            startUDPRecService();
-////        }
+        if (!historyPort.isEmpty() && !historyPort.equals("0")) {
+            startUDPRecService();
+        }
     }
 
     @Override
@@ -168,7 +166,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
     private ServiceConnection mConnection = new ServiceConnection() {
 
         @Override
@@ -186,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
-    private void startUDPRecService(){
+    private void startUDPRecService() {
         try {
             if (mPort.getText().toString().isEmpty()) {
                 Toast.makeText(this, "请输入端口号", Toast.LENGTH_LONG).show();
@@ -256,34 +253,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 (ip >> 24 & 0xFF);
     }
 
-    public static String bytesToHexString(byte[] src) {
-        StringBuilder stringBuilder = new StringBuilder("");
-        if (src == null || src.length <= 0) {
-            return null;
-        }
-        for (int i = 0; i < src.length; i++) {
-            int v = src[i] & 0xFF;
-            String hv = Integer.toHexString(v);
-            if (hv.length() < 2) {
-                stringBuilder.append(0);
-            }
-            stringBuilder.append(hv);
-        }
-        return stringBuilder.toString();
-    }
-
-    public static String bytesHexString(byte[] b) {
-        String ret = "";
-        for (int i = 0; i < b.length; i++) {
-            String hex = Integer.toHexString(b[i] & 0xFF);
-            if (hex.length() == 1) {
-                hex = '0' + hex;
-            }
-            ret += hex.toUpperCase() + " ";
-        }
-        return ret;
-    }
-
 
     @Override
     public void updateServerInfo(boolean isStart) {
@@ -312,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Message msg = new Message();
         msg.what = 2;
         Bundle bundle = new Bundle();
-        bundle.putString("commandInfo", bytesHexString(command));
+        bundle.putString("commandInfo", DataUtils.bytesHexString(command));
         msg.setData(bundle);
         mHandler.sendMessage(msg);
     }

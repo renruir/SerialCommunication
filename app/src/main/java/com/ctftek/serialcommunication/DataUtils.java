@@ -51,7 +51,7 @@ public class DataUtils {
 
     //-------------------------------------------------------
     //字节数组转转hex字符串，可选长度
-    public static String ByteArrToHex(byte[] inBytArr, int offset, int byteCount) {
+    public static String byteArrToHex(byte[] inBytArr, int offset, int byteCount) {
         StringBuilder strBuilder = new StringBuilder();
         int j = byteCount;
         for (int i = offset; i < j; i++) {
@@ -62,7 +62,7 @@ public class DataUtils {
 
     //-------------------------------------------------------
     //转hex字符串转字节数组
-    public static byte[] HexToByteArr(String inHex) {
+    public static byte[] hexToByteArr(String inHex) {
         byte[] result;
         int hexlen = inHex.length();
         if (isOdd(hexlen) == 1) {
@@ -137,6 +137,34 @@ public class DataUtils {
         sum = DataUtils.twoByte(sum);
         cmd += sum;
         return cmd.toUpperCase();
+    }
+
+    public static String bytesToHexString(byte[] src) {
+        StringBuilder stringBuilder = new StringBuilder("");
+        if (src == null || src.length <= 0) {
+            return null;
+        }
+        for (int i = 0; i < src.length; i++) {
+            int v = src[i] & 0xFF;
+            String hv = Integer.toHexString(v);
+            if (hv.length() < 2) {
+                stringBuilder.append(0);
+            }
+            stringBuilder.append(hv);
+        }
+        return stringBuilder.toString();
+    }
+
+    public static String bytesHexString(byte[] b) {
+        String ret = "";
+        for (int i = 0; i < b.length; i++) {
+            String hex = Integer.toHexString(b[i] & 0xFF);
+            if (hex.length() == 1) {
+                hex = '0' + hex;
+            }
+            ret += hex.toUpperCase();
+        }
+        return ret;
     }
 
 }

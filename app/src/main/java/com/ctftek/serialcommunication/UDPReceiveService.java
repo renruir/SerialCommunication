@@ -10,8 +10,9 @@ import android.util.Log;
 public class UDPReceiveService extends Service {
     private final static String TAG = UDPReceiveService.class.getName();
     private IBinder myBinder;
-    int port;
-    private DataCallBack dataCallBack;
+    private int port;
+    UdpReceiveClient udpReceiveClient;
+    private UpdateInfo dataCallBack;
 
     @Override
     public void onCreate() {
@@ -23,7 +24,6 @@ public class UDPReceiveService extends Service {
     public IBinder onBind(Intent intent) {
         port = intent.getIntExtra("port", 65535);
         Log.d(TAG, "onBind port: "+port);
-        startUDPReceiver(port, dataCallBack);
         return myBinder;
     }
 
@@ -32,8 +32,8 @@ public class UDPReceiveService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void startUDPReceiver(int p, DataCallBack callBack) {
-        UdpReceiveClient udpReceiveClient = new UdpReceiveClient(p, callBack);
+    private void startUDPReceiver(int p, UpdateInfo callBack) {
+        udpReceiveClient = new UdpReceiveClient(p, callBack);
         udpReceiveClient.startUDPReceiver();
     }
 
@@ -44,19 +44,15 @@ public class UDPReceiveService extends Service {
         }
     }
 
-    public void setCallBack(DataCallBack mCallback){
+    public void setCallBack(UpdateInfo mCallback){
         dataCallBack = mCallback;
+        startUDPReceiver(port, dataCallBack);
     }
 
-    public static interface DataCallBack{
-        void updateServerInfo(boolean isStart);
-
-        void updateConnectInfo(String info);
-
-        void updateCommandInfo(byte[] command);
-
-        void updateState();
-
-        void sendData2Serial(String data);
+    @Override
+    public boolean onUnbind(Intent intent) {
+        udpReceiveClient.stopUDPReceiver();
+        return super.onUnbind(intent);
     }
+
 }
