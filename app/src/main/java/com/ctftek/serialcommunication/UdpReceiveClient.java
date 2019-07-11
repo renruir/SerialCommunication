@@ -31,8 +31,8 @@ public class UdpReceiveClient {
         Log.d(TAG, "startUDPReceiver success");
     }
 
-    public void stopUDPReceiver(){
-        if(udpReceiverThread.isAlive()){
+    public void stopUDPReceiver() {
+        if (udpReceiverThread.isAlive()) {
             udpReceiverThread.interrupt();
             mDataCallBack.updateState();
         }
@@ -49,19 +49,24 @@ public class UdpReceiveClient {
                         dp.setReuseAddress(true);
                         dp.bind(new InetSocketAddress(mPort));
                     }
-                    byte[] buffer = new byte[6];
+                    byte[] buffer = new byte[1024];
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                     dp.receive(packet);
-                    recCommand = DataUtils.bytesHexString(buffer);
-                    Log.i(TAG, "收到命令: " + recCommand);
-                    Log.d(TAG, "mDataCallBack: " + mDataCallBack);
-                    mDataCallBack.updateCommandInfo(buffer);
+                    String result = new String(packet.getData(), packet.getOffset(), packet.getLength());
+                    recCommand = DataUtils.bytesHexString(subBytes(packet.getData(), 0, packet.getLength()));
+                    mDataCallBack.updateCommandInfo(subBytes(packet.getData(), 0, packet.getLength()));
                     mDataCallBack.sendData2Serial(recCommand);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
+    }
+
+    public byte[] subBytes(byte[] src, int begin, int count) {
+        byte[] bs = new byte[count];
+        System.arraycopy(src, begin, bs, 0, count);
+        return bs;
     }
 
 }
